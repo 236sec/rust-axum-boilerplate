@@ -1,0 +1,35 @@
+#!/bin/bash
+
+# Exit immediately if a command exits with a non-zero status
+set -e
+
+echo "🛡️  Running pre-commit checks..."
+
+# 1. Format check
+echo "🎨 Checking formatting (rustfmt)..."
+cargo fmt --all -- --check || { echo "❌ Formatting issues found. Run 'cargo fmt' to fix."; exit 1; }
+
+# 2. Lint check
+echo "🔍 Running linter (clippy)..."
+cargo clippy --all-targets --all-features -- -D warnings || { echo "❌ Clippy found issues."; exit 1; }
+
+# 3. SQLx Prepare (Metadata update)
+# Note: This requires your DB container to be running!
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
+echo "🗄️  Updating SQLx metadata..."
+if cargo sqlx prepare --workspace; then
+    # If sqlx-data.json was updated, stage the change
+    if [ -f "sqlx-data.json" ]; then
+        git add sqlx-data.json
+    fi
+    # If you have a workspace, you might have multiple json files
+    git add **/sqlx-data.json 2>/dev/null || true
+else
+    echo "⚠️  SQLx prepare failed. Is your Postgres Docker container running?"
+    echo "Continuing anyway, but your CI might fail if metadata is out of sync."
+fi
+
+echo "✅ All checks passed! Committing..."
