@@ -1,4 +1,4 @@
-.PHONY: test coverage lint format audit migrate-add
+.PHONY: test coverage lint format audit migrate-add migrate-run create-db prepare
 
 test:
 	cargo test
@@ -22,7 +22,7 @@ migrate-add:
 migrate-run:
 	sqlx migrate run
 
-// must set DATABASE_URL in .env file before running this command
+# must set DATABASE_URL in .env file before running this command
 create-db:
 	sqlx database create
 

@@ -8,7 +8,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d database_name"]
+      test: ["CMD-SHELL", "pg_isready -U user -d database_name"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -16,14 +16,17 @@ services:
       - app-network
   app:
     build: .
-    restart: always
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgres://user:password@localhost:5432/database_name
+      - DATABASE_URL=postgres://user:password@database:5432/database_name
+      - RUST_LOG=rust_axum_boilerplate=debug,tower_http=debug,sqlx=warn
+      - BIND_ADDR=0.0.0.0:8000
     depends_on:
       database:
         condition: service_healthy
+    networks:
+      - app-network
 volumes:
   db_data:
 networks:

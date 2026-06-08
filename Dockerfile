@@ -6,6 +6,9 @@ WORKDIR /usr/src/app
 # Copy the source code
 COPY . .
 
+# Enforce SQLx offline mode so it reads from the json file
+ENV SQLX_OFFLINE=true
+
 # Build the application in release mode
 RUN cargo build --release
 
