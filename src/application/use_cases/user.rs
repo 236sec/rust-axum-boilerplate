@@ -6,6 +6,12 @@ use tracing::{info, instrument};
 
 use crate::application::app_error::AppResult;
 
+struct User {
+    username: String,
+    email: String,
+    password_hash: String,
+}
+
 #[async_trait]
 pub trait UserPersistence: Send + Sync {
     async fn create_user(&self, username: &str, email: &str, password_hash: &str) -> AppResult<()>;
